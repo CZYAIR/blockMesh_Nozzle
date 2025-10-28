@@ -1,0 +1,287 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //convertToMeters 1;
+//三个圆柱拼起来，参数区
+//修改内部尺寸:radius1,radius1Neg,zI,zMin
+//修改喷孔尺寸:radius2,radius2Neg,zN,zMax
+//修改外部尺寸:radius3,radius3Neg,zO,zMax
+//修改网格数目:nR1,nR2,nR3,nBox,nZ1,nZ2,nZ3
+//若生成的网格外形很怪，请扩大下面cylinder的坐标搜索范围
+scale 1e-5;
+radius1     40;//喷嘴内部腔体半径
+radius1Neg  -40;
+radius2     9.5;//喷孔半径
+radius2Neg -9.5;
+radius3     200;//外部计算域半径
+radius3Neg -200;
+zI          80;//腔体长度,1
+zN          60;//喷孔长度,2
+zO          300;//外部长度,3
+box         4;//box和boxNeg定义中间长方体block的范围
+boxNeg     -4;
+zMax        360;//整体z最大值=zN+zO
+zMin       -80;//整体z最小值=-|zI|
+
+nR1         20;//内部腔体扇形半径节点数
+nR2         20;//喷孔区域扇形半径节点数
+nR3         20;//外部喷雾扇形半径节点数
+nBox        36;//正方形边节点数
+nZ1         180;//内部腔体轴向节点数
+nZ2         180;//喷孔区域轴向节点数
+nZ3         180;//外部喷雾轴向节点数
+verbose no;
+
+geometry
+{
+    cylinder1
+    {
+        type      searchableCylinder;
+        point1    (0 0 -155);//point1和2要大于zI
+        point2    (0 0 55);//
+        radius    $radius1;
+    }
+    cylinder2
+    {
+        type      searchableCylinder;
+        point1    (0 0 -155);//point1和2要大于zI+zN+zO
+        point2    (0 0  405);
+        radius    $radius2;
+    }
+    cylinder3
+    {
+        type      searchableCylinder;
+        point1    (0 0 0);//point1和2要大于zO
+        point2    (0 0 505);
+        radius    $radius3;
+    }
+}
+
+vertices
+(
+    // 方形区域-z=zMin
+    ($boxNeg $boxNeg $zMin)//0
+    ($box    $boxNeg $zMin)//1
+    ($boxNeg $box    $zMin)//2
+    ($box    $box    $zMin)//3
+
+    // 方形区域-z=0
+    ($boxNeg $boxNeg 0)//4
+    ($box    $boxNeg 0)//5
+    ($boxNeg $box    0)//6
+    ($box    $box    0)//7
+
+    // 方形区域-z=zN
+    ($boxNeg $boxNeg $zN)//8
+    ($box    $boxNeg $zN)//9
+    ($boxNeg $box    $zN)//10
+    ($box    $box    $zN)//11
+
+    // 方形区域-z=zMax
+    ($boxNeg $boxNeg $zMax)//12
+    ($box    $boxNeg $zMax)//13
+    ($boxNeg $box    $zMax)//14
+    ($box    $box    $zMax)//15
+
+    // R2-z=zMin
+    project ($radius2Neg $radius2Neg $zMin) (cylinder2)//16
+    project ($radius2    $radius2Neg $zMin) (cylinder2)//17
+    project ($radius2Neg $radius2    $zMin) (cylinder2)//18
+    project ($radius2    $radius2    $zMin) (cylinder2)//19
+
+    // R2-z=0
+    project ($radius2Neg $radius2Neg 0) (cylinder2)//20
+    project ($radius2    $radius2Neg 0) (cylinder2)//21
+    project ($radius2Neg $radius2    0) (cylinder2)//22
+    project ($radius2    $radius2    0) (cylinder2)//23
+
+    // R2-z=zN
+    project ($radius2Neg $radius2Neg $zN) (cylinder2)//24
+    project ($radius2    $radius2Neg $zN) (cylinder2)//25
+    project ($radius2Neg $radius2    $zN) (cylinder2)//26
+    project ($radius2    $radius2    $zN) (cylinder2)//27
+
+    // R2-z=zMax
+    project ($radius2Neg $radius2Neg $zMax) (cylinder2)//28
+    project ($radius2    $radius2Neg $zMax) (cylinder2)//29
+    project ($radius2Neg $radius2    $zMax) (cylinder2)//30
+    project ($radius2    $radius2    $zMax) (cylinder2)//31
+
+    // R1-z=zMin
+    project ($radius1Neg $radius1Neg $zMin) (cylinder1)//32
+    project ($radius1    $radius1Neg $zMin) (cylinder1)//33
+    project ($radius1Neg $radius1    $zMin) (cylinder1)//34
+    project ($radius1    $radius1    $zMin) (cylinder1)//35
+
+    // R1-z=0
+    project ($radius1Neg $radius1Neg 0) (cylinder1)//36
+    project ($radius1    $radius1Neg 0) (cylinder1)//37
+    project ($radius1Neg $radius1    0) (cylinder1)//38
+    project ($radius1    $radius1    0) (cylinder1)//39
+
+    // R3-z=zN
+    project ($radius3Neg $radius3Neg $zN) (cylinder3)//40
+    project ($radius3    $radius3Neg $zN) (cylinder3)//41
+    project ($radius3Neg $radius3    $zN) (cylinder3)//42
+    project ($radius3    $radius3    $zN) (cylinder3)//43
+
+    // R3-z=zMax
+    project ($radius3Neg $radius3Neg $zMax) (cylinder3)//44
+    project ($radius3    $radius3Neg $zMax) (cylinder3)//45
+    project ($radius3Neg $radius3    $zMax) (cylinder3)//46
+    project ($radius3    $radius3    $zMax) (cylinder3)//47
+);
+
+blocks
+(
+    //zMin,0
+    hex (16 17 1 0 20 21 5 4) ($nBox $nR2 $nZ1) simpleGrading (1 1 1)
+    hex (17 19 3 1 21 23 7 5) ($nBox $nR2 $nZ1) simpleGrading (1 1 1)
+    hex (19 18 2 3 23 22 6 7) ($nBox $nR2 $nZ1) simpleGrading (1 1 1)
+    hex (18 16 0 2 22 20 4 6) ($nBox $nR2 $nZ1) simpleGrading (1 1 1)
+    hex (0 1 3 2 4 5 7 6) ($nBox $nBox $nZ1) simpleGrading (1 1 1)
+    hex (32 33 17 16 36 37 21 20) ($nBox $nR1 $nZ1) simpleGrading (1 1 1)
+    hex (33 35 19 17 37 39 23 21) ($nBox $nR1 $nZ1) simpleGrading (1 1 1)
+    hex (35 34 18 19 39 38 22 23) ($nBox $nR1 $nZ1) simpleGrading (1 1 1)
+    hex (34 32 16 18 38 36 20 22) ($nBox $nR1 $nZ1) simpleGrading (1 1 1)   
+
+    //0,zN
+    hex (20 21 5 4 24 25 9 8) ($nBox $nR2 $nZ2) simpleGrading (1 1 1)
+    hex (21 23 7 5 25 27 11 9) ($nBox $nR2 $nZ2) simpleGrading (1 1 1)
+    hex (23 22 6 7 27 26 10 11) ($nBox $nR2 $nZ2) simpleGrading (1 1 1)
+    hex (22 20 4 6 26 24 8 10) ($nBox $nR2 $nZ2) simpleGrading (1 1 1)
+    hex (4 5 7 6 8 9 11 10) ($nBox $nBox $nZ2) simpleGrading (1 1 1)
+
+    //zN,zMax
+    hex (24 25 9 8 28 29 13 12) ($nBox $nR2 $nZ3) simpleGrading (1 1 1)
+    hex (25 27 11 9 29 31 15 13) ($nBox $nR2 $nZ3) simpleGrading (1 1 1)
+    hex (27 26 10 11 31 30 14 15) ($nBox $nR2 $nZ3) simpleGrading (1 1 1)
+    hex (26 24 8 10 30 28 12 14) ($nBox $nR2 $nZ3) simpleGrading (1 1 1)
+    hex (8 9 11 10 12 13 15 14) ($nBox $nBox $nZ3) simpleGrading (1 1 1)
+    hex (40 41 25 24 44 45 29 28) ($nBox $nR3 $nZ3) simpleGrading (1 1 1)
+    hex (41 43 27 25 45 47 31 29) ($nBox $nR3 $nZ3) simpleGrading (1 1 1)
+    hex (43 42 26 27 47 46 30 31) ($nBox $nR3 $nZ3) simpleGrading (1 1 1)
+    hex (42 40 24 26 46 44 28 30) ($nBox $nR3 $nZ3) simpleGrading (1 1 1)   
+
+);
+
+edges
+(
+    project 32 33 (cylinder1)
+    project 33 35 (cylinder1)
+    project 35 34 (cylinder1)
+    project 34 32 (cylinder1)
+    project 36 37 (cylinder1)
+    project 37 39 (cylinder1)
+    project 39 38 (cylinder1)
+    project 38 36 (cylinder1)
+
+    project 16 17 (cylinder2)
+    project 17 19 (cylinder2)
+    project 19 18 (cylinder2)
+    project 18 16 (cylinder2)
+    project 20 21 (cylinder2)
+    project 21 23 (cylinder2)
+    project 23 22 (cylinder2)
+    project 22 20 (cylinder2)
+    project 24 25 (cylinder2)
+    project 25 27 (cylinder2)
+    project 27 26 (cylinder2)
+    project 26 24 (cylinder2)
+    project 28 29 (cylinder2)
+    project 29 31 (cylinder2)
+    project 31 30 (cylinder2)
+    project 30 28 (cylinder2)
+
+    project 40 41 (cylinder3)
+    project 41 43 (cylinder3)
+    project 43 42 (cylinder3)
+    project 42 40 (cylinder3)
+    project 44 45 (cylinder3)
+    project 45 47 (cylinder3)
+    project 47 46 (cylinder3)
+    project 46 44 (cylinder3)
+);
+
+//boundary
+patches
+(
+    patch INLET
+    (
+     (0 1 3 2)
+     (16 17 1 0)
+     (17 19 3 1)
+     (19 18 2 3)
+     (18 16 0 2)
+     (32 33 17 16)
+     (33 35 19 17)
+     (35 34 18 19)
+     (34 32 16 18)
+    )
+
+    wall INWALL
+    (
+     (33 37 39 35)
+     (32 36 37 33)
+     (34 38 36 32)
+     (35 39 38 34)
+    )
+
+    wall INBOT
+    (
+     (39 37 21 23)
+     (37 36 20 21)
+     (36 38 22 20)
+     (38 39 23 22)
+    )
+
+    wall NOZZLEWALL
+    (
+     (21 25 27 23)
+     (20 24 25 21)
+     (22 26 24 20)
+     (23 27 26 22)
+    )
+
+    wall SPRAYWALL
+    (
+     (41 43 27 25)
+     (40 41 25 24)
+     (42 40 24 26)
+     (43 42 26 27)
+    )
+    
+    patch OUTSIDE
+    (
+     (41 45 47 43)
+     (41 40 44 45)
+     (40 42 46 44)
+     (42 43 47 46)
+    )
+
+    patch OUTBOT
+    (
+     (44 45 29 28)
+     (45 47 31 29)
+     (47 46 30 31)
+     (46 44 28 30)
+     (28 29 13 12)
+     (29 31 15 13)
+     (31 30 14 15)
+     (30 28 12 14)
+     (12 13 15 14)
+    )
+);
+
+// ************************************************************************* //
